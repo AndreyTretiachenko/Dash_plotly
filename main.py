@@ -5,9 +5,9 @@ from get_source import get_megafon_source
 
 
 df = get_megafon_source("accounts", "", "")
-df_history = get_megafon_source("history", "yesterday", "miss")
-
-
+df_history = get_megafon_source("history", "yesterday", "out")
+df_group = df_history.groupby(['client'], as_index=False).agg('count').sort_values("UID", ascending=False)
+print(df_group.columns)
 
 app = Dash(__name__)
 
@@ -34,18 +34,11 @@ app.layout = html.Div(children=[
 )
 def render_content(tab):
     if tab == "value-one":
-        return html.Div([
-            html.Table([
-                html.Tr([
-                    html.Td(["1.1"], style={"border": "1px solid"}),
-                    html.Td(["1.2"], style={"border": "1px solid"})
-                ], style={}),
-                html.Tr([
-                    html.Td("2.1", style={"border": "1px solid"}),
-                    html.Td("2.2", style={"border": "1px solid"})
-                ], style={}),
-            ], style={"width": "80%", "height": "70%", "margin-top": "5%", "margin-left": "10%", "margin-right": "10%"})
-        ])
+        return dash_table.DataTable(df_history.to_dict('records'),
+                         [{"name": i, "id": i} for i in df_history.columns], style_data={
+                            'whiteSpace': 'normal',
+                            'height': 'auto'},
+                            filter_action="native")
     elif tab == "value-two":
         return dash_table.DataTable(df.to_dict('records'),
                          [{"name": i, "id": i} for i in df.columns], page_size=14, style_data={
@@ -57,14 +50,12 @@ def render_content(tab):
 
                          )
     else:
-        return dash_table.DataTable(df_history.to_dict('records'),
-                         [{"name": i, "id": i} for i in df_history.columns], page_size=14, style_data={
+        return dash_table.DataTable(df_group.to_dict('records'),
+                         [{"name": i, "id": i} for i in df_group.columns], style_data={
                             'whiteSpace': 'normal',
                             'height': 'auto'},
-                         filter_action="native",
-                         sort_action="native",
-                         sort_mode="multi"
-                                    )
+                            page_size=20
+                            )
 @app.callback(
     Output(component_id='my-output', component_property='children'),
     Input(component_id='my-input', component_property='value')
