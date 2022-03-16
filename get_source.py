@@ -2,6 +2,8 @@ import requests as rq
 import pandas as pd
 import datetime
 import time
+import json
+import os
 
 
 # получение списка звонков по салону из ВАТС Мегафон
@@ -34,30 +36,79 @@ def get_megafon_source(command, period, ctype):
 
 
 # получение списка потенциальных покупателей из amoCRM
-def get_source_amocrm():
-    #if rq.get("https://meb290.amocrm.ru/api/v4/account", headers = {"Authorization": f"Bearer {r_amo_access_token}"}, params = {}).status_code == 400:
+def get_source_amocrm(dataframe):
+    # проверка и обновление токенов для доступа к amoCRM начало
+    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+        data = json.load(file_in)
+    access_token = data["access_token"]
+    refresh_token = data["refresh_token"]
+    if rq.get("https://meb290.amocrm.ru/api/v4/account",
+        headers = {"Authorization": f"Bearer {access_token}"}).status_code != "200":
+        print("access OK")
+    else:
+        print("access FALSE")
+        r_amo_refresh = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
+        json={
+        "client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
+        "client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+        "redirect_uri": "https://mail.ru"
+        },
+        headers={"Content-Type": "application/json"}
+        ).json()
+        data["access_token"] = r_amo_refresh["access_token"]
+        data["refresh_token"] = r_amo_refresh["refresh_token"]
+        data["date_time_refresh"] = str(datetime.datetime.now())
+        with open(f"{os.path.dirname(__file__)}\\token", "w") as file_out:
+            json.dump(data, file_out)
+        access_token = data["access_token"]
+        refresh_token = data["refresh_token"]
+        print("New access amoCRM:")
+        print(r_amo_refresh)
+    # проверка и обновление токенов для доступа к amoCRM конец
 
-    r_amo = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
-                        json={
-                            "client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
-                            "client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
-                            "grant_type": "authorization_code",
-                            "code": "def502003f3f81ff39d8489805dddb42020a9cb0441b889b195f22882fa5a55d1fa21d2e5e931923d292307b3972db73011effa27ac60ce8d58d5d88aea8cd288eb02feaea1222d3c99b3609a0ed162628c91849c474bb1988ed96bd0806c44c438ac1349bcdc214e2d0a09f90225ea66fbbdb52009054ec618b6c77b7288c82e035662ec96d7079ee3d5e1af54287145232cc9b760c06e3f58a7698a43c46bb9f02b7e1eb6d1282f0b0ae0ed83f845d7a2f69cf290836af9e2da21572fbd2b8fc4de5b101d8f48bb28324f59dffc111ea21c9451c3e6c37ba1751741be02695f65b1f0a92b78cdc84910e52360df7213c5a2addff5c095012a3edd4e15f82f68ef2885d11ce260f15cc3c74b0be190125a548a0d66ae3fffde2393538517215a74ffb1d41717a46a418a612b6d159fb1a084f0a8d810aa15772e43dee6d57bbdd9a81e4c41219e071eb8a2952bba0bb69efef8a51cd71bf95bd7ecd99307ae5c228b3b600142bb12fe4ac33ee9482bd713a352d7df7037ff8b18d0748e326e05b206fa494a1c2ad826ba8c782a56e5995da22d483d7eb78bf051466db1600f132007f61147f4f7890dca9af72ef64d5fab8bebb90a26c6fe2",
-                            "redirect_uri": "https://mail.ru"
-                        },
-                        headers={"Content-Type": "application/json"}
-                        )
-    #r_amo_refresh = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
-                            #json={
-                                #"client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
-                                #"client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
-                                #"grant_type": "refresh_token",
-                                #"refresh_token": "def5020062676b3e6f3a327abc9f8e863a7b1b01f8fc3b35377e918df5ae2e3f4fa77e1985b220909c3f2a80a99ce0131c841ebe0134293581c7bb4d0888d126d891bcbb94a997baddb85972aea495c523e09cfd57298c808e0ccda5955a7d7d7213a462495f74d97d7d7682a6675b259b7dd1334dbdd806d61f3db667f12db6b56445adfd775a8454af03c452e5ced3133aeacce166c0547555f8f53813441a36d9202131c3bc91c9af334370b44158a80247b56534740f0b61414f47a807f644a35e80d1e8b2e068c9f6f56bb72f5eae0d36aeb0e3f4b282b9dfbbad952a1b2d1cfba9f31b5caf4abc953d485b1a61ee8715f2ae2a16c00056cc6bd248ec2e0f98e9671f0378b90d14d39ef42d61f32fa49c7b74e53caa2717352990c36de0146b68bc88837140ad98fa422db421d0f83b0369007ae6d3d8a628666355178d5f620b4ff06dbcfd8b3a02f333eafb0677e5ec52edf1768f1c0458f8528c19f7ff13ed8a34df712251720f4bbf3e45e3e595e9a0d4e6f53c500955e715ed57dfcc69d053075ecb5101a84115553e35ae87b514253ab73f33431de4d7839c0b6c281e57dbfc652faa709ca1b1cf17ef48d017adbd2e94078ad2",
-                                #"redirect_uri": "https://mail.ru"
-                            #},
-                            #headers={"Content-Type": "application/json"}
-                            #)
-    print(r_amo.text)
+    # получение и валидация данных начало
+
+    # получение контакта из амо по номеру телефона начало
+    r_amo_contact = rq.get("https://meb290.amocrm.ru/api/v4/contacts",
+                           headers={"Authorization": f"Bearer {access_token}"},
+                           params={
+                               "query": "9115629907"
+                           }
+                           ).json()
+
+    df_amo_contact = pd.DataFrame.from_dict(r_amo_contact["_embedded"]["contacts"])[['id', 'name', 'first_name', 'last_name', 'responsible_user_id']]
+
+    i = 0
+    contact_list = []
+    for contact in r_amo_contact["_embedded"]["contacts"]:
+        j = 0
+        for value_contact in r_amo_contact["_embedded"]["contacts"][i]["custom_fields_values"][j]["values"]:
+            contact_list.append("".join(c for c in value_contact['value'] if c.isdecimal())[1:])
+            j += 1
+        i += 1
+    df_amo_contact = df_amo_contact.join(pd.DataFrame(contact_list), lsuffix='', rsuffix='_join')
+    df_amo_contact = df_amo_contact.rename(columns={0: "phone_num"})
+
+    # получение контакта из амо по номеру телефона конец
+
+    dict_dataframe = dataframe.T.to_dict()
+    for i in range(0, 656, 1):
+        print(i)
+        tel_num = dict_dataframe[i]['client']
+        r_amo_contact_i = rq.get("https://meb290.amocrm.ru/api/v4/contacts",
+                               headers={"Authorization": f"Bearer {access_token}"},
+                               params={"query": f"{str(tel_num)[1:]}"}
+                               )
+
+        if r_amo_contact_i.status_code == 200:
+            dict_dataframe[i]["amoCRM_client"] = "yes"
+        else:
+            dict_dataframe[i]["amoCRM_client"] = "no"
+    df_amo_megafon = pd.DataFrame.from_dict(dict_dataframe).T
+    print(df_amo_megafon[["UID", "Type", "client", "amoCRM_client"]])
+    # получение и валидация данных конец
     pass
 
 
@@ -67,7 +118,7 @@ def get_source_1c():
 
 
 def main():
-    get_source_amocrm()
+    get_source_amocrm(get_megafon_source("history", "yesterday", "out"))
     pass
 
 
