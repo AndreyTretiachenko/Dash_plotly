@@ -7,6 +7,31 @@ import os
 from progress_bar import InitBar
 
 
+def get_all_contact():
+    df_contacts = pd.DataFrame
+    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+        data = json.load(file_in)
+    access_token = data["access_token"]
+    step = 0
+    while True:
+        r_temp = rq.get(f"https://meb290.amocrm.ru/api/v4/contacts",
+                        headers={"Authorization": f"Bearer {access_token}"},
+                        params={
+                            "page": f"{step}",
+                            "limit": "250"
+                        }
+                        )
+        print(r_temp.status_code)
+        if r_temp.status_code == 200:
+            r_temp_json = r_temp.json()
+            df_contacts_temp = pd.DataFrame.from_dict(r_temp_json["_embedded"]["contacts"])
+            df_contacts = pd.concat([df_contacts, df_contacts_temp], ignore_index=True)
+            step += 1
+        else:
+            print(f"\n запрос не состоялся на шаге{step}")
+            break
+    return df_contacts
+
 # получение списка звонков по салону из ВАТС Мегафон
 def get_megafon_source(command, period, ctype):
     rq.session()
@@ -127,7 +152,8 @@ def get_source_1c():
 
 
 def main():
-    get_source_amocrm(get_megafon_source("history", "this_month", "out"))
+    #get_source_amocrm(get_megafon_source("history", "this_month", "out"))
+    print(get_all_contact().head())
     pass
 
 
