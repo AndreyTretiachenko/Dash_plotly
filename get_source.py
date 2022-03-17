@@ -1,9 +1,10 @@
 import requests as rq
 import pandas as pd
 import datetime
-import time
 import json
+import time
 import os
+from progress_bar import InitBar
 
 
 # получение списка звонков по салону из ВАТС Мегафон
@@ -43,7 +44,7 @@ def get_source_amocrm(dataframe):
     access_token = data["access_token"]
     refresh_token = data["refresh_token"]
     if rq.get("https://meb290.amocrm.ru/api/v4/account",
-        headers = {"Authorization": f"Bearer {access_token}"}).status_code != "200":
+        headers = {"Authorization": f"Bearer {access_token}"}).status_code == 200:
         print("access OK")
     else:
         print("access FALSE")
@@ -94,20 +95,28 @@ def get_source_amocrm(dataframe):
     # получение контакта из амо по номеру телефона конец
 
     dict_dataframe = dataframe.T.to_dict()
-    for i in range(0, 656, 1):
-        print(i)
+    print(f"Начало: {datetime.datetime.now()}")
+    bar = InitBar(title="Запрос в amoCRM", size=len(dict_dataframe), offset=1)
+    for i in range(0, len(dict_dataframe), 1):
+        bar(i)
         tel_num = dict_dataframe[i]['client']
         r_amo_contact_i = rq.get("https://meb290.amocrm.ru/api/v4/contacts",
                                headers={"Authorization": f"Bearer {access_token}"},
                                params={"query": f"{str(tel_num)[1:]}"}
                                )
+        #if i % 500 == 0:
+            #time.sleep(3)
 
         if r_amo_contact_i.status_code == 200:
             dict_dataframe[i]["amoCRM_client"] = "yes"
         else:
             dict_dataframe[i]["amoCRM_client"] = "no"
+
+    print(f"\nКонец: {datetime.datetime.now()}")
     df_amo_megafon = pd.DataFrame.from_dict(dict_dataframe).T
+    df_amo_megafon.to_excel("amo_megafon.xlsx")
     print(df_amo_megafon[["UID", "Type", "client", "amoCRM_client"]])
+
     # получение и валидация данных конец
     pass
 
@@ -118,7 +127,7 @@ def get_source_1c():
 
 
 def main():
-    get_source_amocrm(get_megafon_source("history", "yesterday", "out"))
+    get_source_amocrm(get_megafon_source("history", "this_month", "out"))
     pass
 
 
