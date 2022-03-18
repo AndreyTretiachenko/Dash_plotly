@@ -7,29 +7,46 @@ import os
 from progress_bar import InitBar
 
 
-def get_all_contact():
-    df_contacts = pd.DataFrame
+def get_amo_users():
     with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
         data = json.load(file_in)
     access_token = data["access_token"]
-    step = 0
+    r_amo_users = rq.get("https://meb290.amocrm.ru/api/v4/users",
+                         headers={"Authorization": f"Bearer {access_token}"},
+                         params={
+                             "limit": "100"
+                         }
+                         ).json()
+    return r_amo_users
+
+
+def get_all_contact():
+    df_contacts = pd.DataFrame()
+    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+        data = json.load(file_in)
+    access_token = data["access_token"]
+    step = 1
+    print(f"Начало: {datetime.datetime.now()}")
+    rq.session()
     while True:
         r_temp = rq.get(f"https://meb290.amocrm.ru/api/v4/contacts",
                         headers={"Authorization": f"Bearer {access_token}"},
                         params={
-                            "page": f"{step}",
+                           "page": f"{step}",
                             "limit": "250"
+                            #"filter[responsible_user_id]": f"{id_user}",
                         }
                         )
-        print(r_temp.status_code)
         if r_temp.status_code == 200:
             r_temp_json = r_temp.json()
             df_contacts_temp = pd.DataFrame.from_dict(r_temp_json["_embedded"]["contacts"])
             df_contacts = pd.concat([df_contacts, df_contacts_temp], ignore_index=True)
             step += 1
+            print(f"Page {step} loaded")
         else:
-            print(f"\n запрос не состоялся на шаге{step}")
+            print(f"\nКонтакты закончились. Страниц контактов: {step}")
             break
+    print(f"\nКонец: {datetime.datetime.now()}")
     return df_contacts
 
 # получение списка звонков по салону из ВАТС Мегафон
@@ -129,9 +146,6 @@ def get_source_amocrm(dataframe):
                                headers={"Authorization": f"Bearer {access_token}"},
                                params={"query": f"{str(tel_num)[1:]}"}
                                )
-        #if i % 500 == 0:
-            #time.sleep(3)
-
         if r_amo_contact_i.status_code == 200:
             dict_dataframe[i]["amoCRM_client"] = "yes"
         else:
@@ -139,7 +153,6 @@ def get_source_amocrm(dataframe):
 
     print(f"\nКонец: {datetime.datetime.now()}")
     df_amo_megafon = pd.DataFrame.from_dict(dict_dataframe).T
-    df_amo_megafon.to_excel("amo_megafon.xlsx")
     print(df_amo_megafon[["UID", "Type", "client", "amoCRM_client"]])
 
     # получение и валидация данных конец
@@ -152,8 +165,9 @@ def get_source_1c():
 
 
 def main():
-    #get_source_amocrm(get_megafon_source("history", "this_month", "out"))
-    print(get_all_contact().head())
+
+
+
     pass
 
 
