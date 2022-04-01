@@ -14,7 +14,7 @@ def get_amo_users():
     r_amo_users = rq.get("https://meb290.amocrm.ru/api/v4/users",
                          headers={"Authorization": f"Bearer {access_token}"},
                          params={
-                             "limit": "100"
+                             "limit": "300"
                          }
                          ).json()
     return r_amo_users
@@ -95,11 +95,12 @@ def get_source_amocrm(dataframe):
         "client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
         "client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
+        "refresh_token": f"{refresh_token}",
         "redirect_uri": "https://mail.ru"
         },
         headers={"Content-Type": "application/json"}
         ).json()
+        print(r_amo_refresh)
         data["access_token"] = r_amo_refresh["access_token"]
         data["refresh_token"] = r_amo_refresh["refresh_token"]
         data["date_time_refresh"] = str(datetime.datetime.now())
@@ -165,9 +166,7 @@ def get_source_1c():
 
 
 def main():
-
-
-
+    get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
     pass
 
 
