@@ -8,7 +8,7 @@ from progress_bar import InitBar
 
 
 def get_amo_users():
-    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+    with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "r", encoding="utf-8") as file_in:
         data = json.load(file_in)
     access_token = data["access_token"]
     r_amo_users = rq.get("https://meb290.amocrm.ru/api/v4/users",
@@ -22,7 +22,7 @@ def get_amo_users():
 
 def get_all_contact():
     df_contacts = pd.DataFrame()
-    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+    with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "r", encoding="utf-8") as file_in:
         data = json.load(file_in)
     access_token = data["access_token"]
     step = 1
@@ -81,7 +81,7 @@ def get_megafon_source(command, period, ctype):
 # получение списка потенциальных покупателей из amoCRM
 def get_source_amocrm(dataframe):
     # проверка и обновление токенов для доступа к amoCRM начало
-    with open(f"{os.path.dirname(__file__)}\\token", "r", encoding="utf-8") as file_in:
+    with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "r", encoding="utf-8") as file_in:
         data = json.load(file_in)
     access_token = data["access_token"]
     refresh_token = data["refresh_token"]
@@ -104,7 +104,7 @@ def get_source_amocrm(dataframe):
         data["access_token"] = r_amo_refresh["access_token"]
         data["refresh_token"] = r_amo_refresh["refresh_token"]
         data["date_time_refresh"] = str(datetime.datetime.now())
-        with open(f"{os.path.dirname(__file__)}\\token", "w") as file_out:
+        with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "w") as file_out:
             json.dump(data, file_out)
         access_token = data["access_token"]
         refresh_token = data["refresh_token"]
@@ -166,7 +166,8 @@ def get_source_1c():
 
 
 def main():
-    get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
+    print(os.path.join(os.path.dirname(__file__), "token"))
+    #get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
     pass
 
 
