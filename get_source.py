@@ -81,27 +81,30 @@ def get_source_amocrm(dataframe):
         data = json.load(file_in)
     access_token = data["access_token"]
     refresh_token = data["refresh_token"]
-    r_amo_refresh_query = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
-                            json={
-                                "client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
-                                "client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
-                                "grant_type": "refresh_token",
-                                "refresh_token": f"{refresh_token}",
-                                "redirect_uri": "https://mail.ru"
-                            },
-                            headers={"Content-Type": "application/json"})
+
+
+    print(rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).text)
     if rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).status_code == 200:
         print("access OK")
     elif r_amo_refresh_query.status_code != 200:
         print("refresh token has revoke")
     else:
+        r_amo_refresh_query = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
+                                      json={
+                                          "client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
+                                          "client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
+                                          "grant_type": "refresh_token",
+                                          "refresh_token": f"{refresh_token}",
+                                          "redirect_uri": "https://mail.ru"
+                                      },
+                                      headers={"Content-Type": "application/json"})
         print("access FALSE")
         print(r_amo_refresh_query)
         r_amo_refresh = r_amo_refresh_query.json()
         data["access_token"] = r_amo_refresh["access_token"]
         data["refresh_token"] = r_amo_refresh["refresh_token"]
         data["date_time_refresh"] = str(datetime.datetime.now())
-        with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "w") as file_out:
+        with open(f"{os.path.join(os.path.dirname(__file__), 'token')}", "w", encoding="utf-8") as file_out:
             json.dump(data, file_out)
         access_token = data["access_token"]
         refresh_token = data["refresh_token"]
