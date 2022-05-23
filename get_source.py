@@ -86,8 +86,6 @@ def get_source_amocrm(dataframe):
     print(rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).text)
     if rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).status_code == 200:
         print("access OK")
-    elif r_amo_refresh_query.status_code != 200:
-        print("refresh token has revoke")
     else:
         r_amo_refresh_query = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
                                       json={
@@ -154,7 +152,8 @@ def get_source_amocrm(dataframe):
 
     print(f"\nКонец: {datetime.datetime.now()}")
     df_amo_megafon = pd.DataFrame.from_dict(dict_dataframe).T
-    print(df_amo_megafon[["UID", "Type", "client", "amoCRM_client"]])
+    return df_amo_megafon
+
 
     # получение и валидация данных конец
     pass
@@ -168,18 +167,10 @@ def get_source_1c():
 def main():
     #print(os.path.join(os.path.dirname(__file__), "token"))
     #get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
+    data = get_source_amocrm(get_megafon_source("history", "today", "out"))
+    print(data.columns)
+    print(data[["UID", "Type", "client", "amoCRM_client"]])
 
-    #r_amo_refresh = rq.post("https://meb290.amocrm.ru/oauth2/access_token",
-                            #json={
-                                #"client_id": "ecb8ec97-98c3-4fd1-9777-a9935113974f",
-                                #"client_secret": "JscDfuHoUTwLR8V5gkHMYIDdfXBQUHsgaXDx7Jv5yAZt3LgJKfkbm8Hsmkd0jQF6",
-                                #"grant_type": "authorization_code",
-                                #"code": "def502007521d46cc520e97ad556665c0ac332b8e8942e5f9f8aac4ba311320a64904e54b004c996b6309826325ddbb0b7e86e68162fb60c05a32c843c2cc527d74052da784adfe61e26bdf86335e3af1763a9295abc541454bdfd1bae9b82ed4f581bf045fd5fed72dbdfa4f07569a009dc4d54df62a5f9fd8a3659d88315d47142633ba5b84467704b72e0ceaba183673d474ad3b17d995361998c64ab786054d2771c4c02e7899475f167eef19db474387c101a49547092c73d2b74594b9a12add7e5bd2540890ba2061b0689782090df9070d126826eb7f23824bd79396f9b689090d5f6ccc37ac787bbc5169e65d4a03d9f964b691674a7d176dff5813bf916410a68f6f45c2563c3a4535508ebe8195b2a8eee69d8f2984aebc06974e31673e75a5d8ac4f629bc3041291d27fa5249a311d936831c08b6dc4fddec5022d8364f55ee3fa35db38dc6fb8e60956383e83267c907c8db07defb7460d6de855d57e9090c4e78f2acf60fdd4c5cab0e10f8bc58bd5fdd6ab94723d77f4eb22a69e79bb5052a99ccffb91e5727ef4920109c6a5329096ad40265fa61f01e25d178b7824aa5de8b22bdd1ab21e937ffd27ab611933f55450a2b",
-                                #"redirect_uri": "https://mail.ru"
-                            #},
-                            #headers={"Content-Type": "application/json"}).json()
-    #print(r_amo_refresh)
-    get_source_amocrm(get_megafon_source("history", "today", "out"))
     pass
 
 
