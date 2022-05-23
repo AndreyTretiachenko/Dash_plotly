@@ -165,7 +165,6 @@ def get_source_1c():
 
 
 def main():
-    #print(os.path.join(os.path.dirname(__file__), "token"))
     #get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
     data = get_source_amocrm(get_megafon_source("history", "today", "out"))
     print(data.columns)
