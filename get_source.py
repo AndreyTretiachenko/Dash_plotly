@@ -147,8 +147,11 @@ def get_source_amocrm(dataframe):
                                  params={"query": f"{str(tel_num)[1:]}"})
         if r_amo_contact_i.status_code == 200:
             dict_dataframe[i]["amoCRM_client"] = "yes"
+            r_amo_contact_i_json = r_amo_contact_i.json()
+            dict_dataframe[i]["Link_amoCRM"] = f"https://meb290.amocrm.ru/contacts/detail/{r_amo_contact_i_json['_embedded']['contacts'][0]['id']}"
         else:
             dict_dataframe[i]["amoCRM_client"] = "no"
+            dict_dataframe[i]["Link_amoCRM"] = "no link"
 
     print(f"\nКонец: {datetime.datetime.now()}")
     df_amo_megafon = pd.DataFrame.from_dict(dict_dataframe).T
@@ -165,11 +168,6 @@ def get_source_1c():
 
 
 def main():
-    #get_megafon_source("accounts", "", "").to_csv("accounts_megafon.csv")
-    data = get_source_amocrm(get_megafon_source("history", "today", "out"))
-    print(data.columns)
-    print(data[["UID", "Type", "client", "amoCRM_client"]])
-
     pass
 
 
