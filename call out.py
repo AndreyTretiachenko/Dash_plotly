@@ -46,18 +46,18 @@ def main():
         get_megafon_source("history", "yesterday", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
             "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 4').head(10)
+        'Link_amoCRM != "no link" & Type > 4').head(20)
     data_sort_thisweek = get_source_amocrm(
         get_megafon_source("history", "this_week", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
             "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 10').head(10)
+        'Link_amoCRM != "no link" & Type > 10').head(20)
 
     data_sort_lastweek = get_source_amocrm(
         get_megafon_source("history", "last_week", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
             "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 15').head(10)
+        'Link_amoCRM != "no link" & Type > 15').head(20)
     print(save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", "yesterday", "thisweek", "lastweek"))
 
 
