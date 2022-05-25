@@ -82,8 +82,6 @@ def get_source_amocrm(dataframe):
     access_token = data["access_token"]
     refresh_token = data["refresh_token"]
 
-
-    print(rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).text)
     if rq.get("https://meb290.amocrm.ru/api/v4/account", headers={"Authorization": f"Bearer {access_token}"}).status_code == 200:
         print("access OK")
     else:
