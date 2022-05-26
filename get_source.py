@@ -133,20 +133,26 @@ def get_source_amocrm(dataframe):
     df_amo_contact = df_amo_contact.rename(columns={0: "phone_num"})
 
     # получение контакта из амо по номеру телефона конец
-
     dict_dataframe = dataframe.T.to_dict()
     print(f"Начало: {datetime.datetime.now()}")
-    bar = InitBar(title="Запрос в amoCRM", size=len(dict_dataframe), offset=0)
-    for i in range(0, len(dict_dataframe), 1):
-        bar(i)
+    bar = InitBar(title="Запрос в amoCRM", size=len(dataframe.index.tolist()), offset=0)
+    k = 1
+    for i in dataframe.index.tolist():
+
+        bar(k)
+        k = k+1
         tel_num = dict_dataframe[i]['client']
         r_amo_contact_i = rq.get("https://meb290.amocrm.ru/api/v4/contacts",
                                  headers={"Authorization": f"Bearer {access_token}"},
                                  params={"query": f"{str(tel_num)[1:]}"})
         if r_amo_contact_i.status_code == 200:
+
             dict_dataframe[i]["amoCRM_client"] = "yes"
             r_amo_contact_i_json = r_amo_contact_i.json()
             dict_dataframe[i]["Link_amoCRM"] = f"https://meb290.amocrm.ru/contacts/detail/{r_amo_contact_i_json['_embedded']['contacts'][0]['id']}"
+            dict_dataframe[i]["Name"] = r_amo_contact_i_json['_embedded']['contacts'][0]['name']
+            dict_dataframe[i]["User"] = rq.get(f"https://meb290.amocrm.ru/api/v4/users/{r_amo_contact_i_json['_embedded']['contacts'][0]['responsible_user_id']}",
+                                 headers={"Authorization": f"Bearer {access_token}"}).json()['name']
         else:
             dict_dataframe[i]["amoCRM_client"] = "no"
             dict_dataframe[i]["Link_amoCRM"] = "no link"

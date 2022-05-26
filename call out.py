@@ -5,16 +5,21 @@ import matplotlib.pyplot as plt
 import datetime
 
 
-def save_excel(dataframe1, dataframe2, dataframe3, name, sheet1, sheet2, sheet3):
+def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
     try:
         writer_excel = pd.ExcelWriter(f"{name}.xlsx")
-        dataframe1.to_excel(writer_excel, startrow=1, sheet_name=sheet1)
-        dataframe2.to_excel(writer_excel, startrow=1, sheet_name=sheet2)
-        dataframe3.to_excel(writer_excel, startrow=1, sheet_name=sheet3)
-        #for column in dataframe:
-            #column_length = max(dataframe[column].astype(str).map(len).max(), len(column))
-            #col_idx = dataframe.columns.get_loc(column)
-            #writer_excel.sheets[sheet].set_column(col_idx, col_idx, column_length)
+        dataframe1.to_excel(writer_excel, startrow=0, sheet_name=sheets[0])
+        dataframe2.to_excel(writer_excel, startrow=0, sheet_name=sheets[1])
+        dataframe3.to_excel(writer_excel, startrow=0, sheet_name=sheets[2])
+        for i in sheets:
+            worksheet = writer_excel.sheets[i]  # pull worksheet object
+            worksheet.set_column(5, 5, 20)  # set column width
+            worksheet.set_column(4, 4, 45)  # set column width
+            worksheet.set_column(0, 0, 7)  # set column width
+            worksheet.set_column(3, 3, 13)  # set column width
+            worksheet.set_column(2, 2, 10)  # set column width
+            worksheet.set_column(1, 1, 15)  # set column width
+            worksheet.set_column(6, 6, 35)  # set column width
         writer_excel.save()
         return True
     except:
@@ -44,21 +49,22 @@ def main():
     print(datetime.datetime.today().date())
     data_sort_yesterday = get_source_amocrm(
         get_megafon_source("history", "yesterday", "out")[['client', 'Type']].groupby("client",
-                                                                                  as_index=False).count().sort_values(
-            "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 4').head(20)
+                                                                                      as_index=False).count().sort_values(
+            "Type", ascending=False).query('Type > 3'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
+        'Link_amoCRM != "no link"').head(20)
+
     data_sort_thisweek = get_source_amocrm(
         get_megafon_source("history", "this_week", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
-            "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 10').head(20)
+            "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
+        'Link_amoCRM != "no link"').head(20)
 
     data_sort_lastweek = get_source_amocrm(
         get_megafon_source("history", "last_week", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
-            "Type", ascending=False))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM']].query(
-        'Link_amoCRM != "no link" & Type > 15').head(20)
-    print(save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", "yesterday", "thisweek", "lastweek"))
+            "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
+        'Link_amoCRM != "no link"').head(20)
+    print(save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", ["yesterday", "thisweek", "lastweek"]))
 
 
 if __name__ == "__main__":
