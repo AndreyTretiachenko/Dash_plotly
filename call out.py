@@ -1,5 +1,5 @@
 from get_source import get_source_amocrm
-from get_source import get_megafon_source
+from get_source import get_megafon_source, send_email
 import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
@@ -21,6 +21,7 @@ def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
             worksheet.set_column(1, 1, 15)  # set column width
             worksheet.set_column(6, 6, 35)  # set column width
         writer_excel.save()
+        send_email("meb290@mail.ru", "meb290@mail.ru", "Аналитика по подозрительным звонкам", "Аналитика")
         return True
     except:
         return False

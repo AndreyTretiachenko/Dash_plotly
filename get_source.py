@@ -2,9 +2,38 @@ import requests as rq
 import pandas as pd
 import datetime
 import json
-#import time
-import os
 from progress_bar import InitBar
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import os
+
+email_pass = "VscwGSRCryHHwW7ZabiL"
+
+
+def send_email(email_from, email_to, email_body, email_subject):
+    try:
+        # Compose attachment
+        basename = os.path.basename(__file__)
+        part = MIMEBase('application', "octet-stream")
+        part.set_payload(open("amo_scan 2022-05-26.xlsx", "rb").read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"' % basename)
+        msg = MIMEMultipart()  # Создаем сообщение
+        msg['From'] = email_from  # Адресат
+        msg['To'] = email_to  # Получатель
+        msg['Subject'] = email_subject
+        msg.attach(part)
+        msg.attach(MIMEText(email_body, 'html', 'utf-8'))
+        server = smtplib.SMTP_SSL("smtp.mail.ru", 465)
+        server.login("meb290@mail.ru", email_pass)
+        server.send_message(msg)
+        server.quit()
+        return print(f"функция отправки на email: {email_to} выполнена успешно \n")
+    except:
+        return print(f"Не удалось отправить на email: {email_to} \n")
 
 
 def get_amo_users():
@@ -106,33 +135,7 @@ def get_source_amocrm(dataframe):
         refresh_token = data["refresh_token"]
         print("New access amoCRM:")
         print(r_amo_refresh)
-    # проверка и обновление токенов для доступа к amoCRM конец
 
-    # получение и валидация данных начало
-
-    # получение контакта из амо по номеру телефона начало
-    r_amo_contact = rq.get("https://meb290.amocrm.ru/api/v4/contacts",
-                           headers={"Authorization": f"Bearer {access_token}"},
-                           params={
-                               "query": "9115629907"
-                           }
-                           ).json()
-
-    df_amo_contact = pd.DataFrame.from_dict(
-        r_amo_contact["_embedded"]["contacts"])[['id', 'name', 'first_name', 'last_name', 'responsible_user_id']]
-
-    i = 0
-    contact_list = []
-    for contact in r_amo_contact["_embedded"]["contacts"]:
-        j = 0
-        for value_contact in r_amo_contact["_embedded"]["contacts"][i]["custom_fields_values"][j]["values"]:
-            contact_list.append("".join(c for c in value_contact['value'] if c.isdecimal())[1:])
-            j += 1
-        i += 1
-    df_amo_contact = df_amo_contact.join(pd.DataFrame(contact_list), lsuffix='', rsuffix='_join')
-    df_amo_contact = df_amo_contact.rename(columns={0: "phone_num"})
-
-    # получение контакта из амо по номеру телефона конец
     dict_dataframe = dataframe.T.to_dict()
     print(f"Начало: {datetime.datetime.now()}")
     bar = InitBar(title="Запрос в amoCRM", size=len(dataframe.index.tolist()), offset=0)
