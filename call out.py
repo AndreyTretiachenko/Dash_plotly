@@ -69,7 +69,7 @@ def analize_call():
 
 
 def main():
-
+    a =print()
     schedule.every().day.at("09:00").do(analize_call)
 
     while True:
