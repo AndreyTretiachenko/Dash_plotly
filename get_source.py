@@ -13,12 +13,12 @@ import os
 email_pass = "VscwGSRCryHHwW7ZabiL"
 
 
-def send_email(email_from, email_to, email_body, email_subject):
+def send_email(email_from, email_to, email_body, email_subject, filename):
     try:
         # Compose attachment
-        basename = os.path.basename(__file__)
+        basename = os.path.basename(filename)
         part = MIMEBase('application', "octet-stream")
-        part.set_payload(open("amo_scan 2022-05-26.xlsx", "rb").read())
+        part.set_payload(open(filename, "rb").read())
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', 'attachment; filename="%s"' % basename)
         msg = MIMEMultipart()  # Создаем сообщение

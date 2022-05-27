@@ -3,6 +3,8 @@ from get_source import get_megafon_source, send_email
 import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
+import time
+import schedule
 
 
 def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
@@ -21,7 +23,7 @@ def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
             worksheet.set_column(1, 1, 15)  # set column width
             worksheet.set_column(6, 6, 35)  # set column width
         writer_excel.save()
-        send_email("meb290@mail.ru", "meb290@mail.ru", "Аналитика по подозрительным звонкам", "Аналитика")
+        send_email("meb290@mail.ru", "meb290@mail.ru", "Аналитика по подозрительным звонкам", "Аналитика", f"{name}.xlsx")
         return True
     except:
         return False
@@ -39,15 +41,13 @@ def creattable_plotlib(dataframe, name):
     return plt.savefig(f"{name}.png")
 
 
-def main():
+def analize_call():
     # настройки отображения таблицы в консоле
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
 
     # запрос данных аккаунтов из мегафона
-    account = get_megafon_source("accounts", "", "")
-    print(datetime.datetime.today().date())
     data_sort_yesterday = get_source_amocrm(
         get_megafon_source("history", "yesterday", "out")[['client', 'Type']].groupby("client",
                                                                                       as_index=False).count().sort_values(
@@ -66,6 +66,16 @@ def main():
             "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
         'Link_amoCRM != "no link"').head(20)
     print(save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", ["yesterday", "thisweek", "lastweek"]))
+
+
+def main():
+
+    schedule.every().day.at("09:00").do(analize_call)
+
+    while True:
+        schedule.run_pending()
+
+
 
 
 if __name__ == "__main__":
