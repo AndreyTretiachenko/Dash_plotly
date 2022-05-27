@@ -23,7 +23,7 @@ def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
             worksheet.set_column(1, 1, 15)  # set column width
             worksheet.set_column(6, 6, 35)  # set column width
         writer_excel.save()
-        send_email("meb290@mail.ru", "meb290@mail.ru", "Аналитика по подозрительным звонкам", "Аналитика", f"{name}.xlsx")
+        send_email("meb290@mail.ru", ["meb290@mail.ru", "marketing2900@mail.ru"], f"Добрый день. \nФайл {name}.xlsx с аналитикой подозрительных звонков во вложении \nСообщение создано автоматичеки", "Аналитика по звонкам", f"{name}.xlsx")
         return True
     except:
         return False
@@ -65,7 +65,7 @@ def analize_call():
                                                                                   as_index=False).count().sort_values(
             "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
         'Link_amoCRM != "no link"').head(20)
-    print(save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", ["yesterday", "thisweek", "lastweek"]))
+    save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", ["yesterday", "thisweek", "lastweek"])
 
 
 def main():
