@@ -69,8 +69,8 @@ def analize_call():
 
 
 def main():
-    a =print()
-    schedule.every().day.at("09:00").do(analize_call)
+    a =input("Введите время")
+    schedule.every().day.at(a).do(analize_call)
 
     while True:
         schedule.run_pending()
