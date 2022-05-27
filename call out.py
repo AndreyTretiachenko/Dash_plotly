@@ -69,7 +69,7 @@ def analize_call():
 
 
 def main():
-    a =input("Введите время")
+    a =input("Введите время: ")
     schedule.every().day.at(a).do(analize_call)
 
     while True:
