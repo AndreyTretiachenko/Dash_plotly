@@ -23,7 +23,7 @@ def save_excel(dataframe1, dataframe2, dataframe3, name, sheets):
             worksheet.set_column(1, 1, 15)  # set column width
             worksheet.set_column(6, 6, 35)  # set column width
         writer_excel.save()
-        send_email("meb290@mail.ru", "meb290@mail.ru", f"Добрый день. \nФайл {name}.xlsx с аналитикой подозрительных звонков во вложении. \nСообщение создано автоматически.", "Аналитика по звонкам", f"{name}.xlsx")
+        send_email("meb290@mail.ru", "meb290@mail.ru, marketing2900@mail.ru, meb29az@mail.ru, vladykinm@mail.ru", f"Добрый день. \nФайл {name}.xlsx с аналитикой подозрительных звонков во вложении. \nСообщение создано автоматически.", "Аналитика по звонкам", f"{name}.xlsx")
         return True
     except:
         return False
