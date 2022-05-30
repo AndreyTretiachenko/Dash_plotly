@@ -52,19 +52,21 @@ def analize_call():
         get_megafon_source("history", "yesterday", "out")[['client', 'Type']].groupby("client",
                                                                                       as_index=False).count().sort_values(
             "Type", ascending=False).query('Type > 3'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
-        'Link_amoCRM != "no link"').head(20)
-
-    data_sort_thisweek = get_source_amocrm(
-        get_megafon_source("history", "this_week", "out")[['client', 'Type']].groupby("client",
-                                                                                  as_index=False).count().sort_values(
-            "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
-        'Link_amoCRM != "no link"').head(20)
-
+        'Link_amoCRM != "no link"')
+    try:
+        data_sort_thisweek = get_source_amocrm(
+            get_megafon_source("history", "this_week", "out")[['client', 'Type']].groupby("client",
+                                                                                      as_index=False).count().sort_values(
+                "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
+            'Link_amoCRM != "no link"')
+    except:
+        print("недостаточно данных для аналитики за текущую неделю")
+        data_sort_thisweek = pd.DataFrame([['недостаточно данных для аналитики за текущую неделю']])
     data_sort_lastweek = get_source_amocrm(
         get_megafon_source("history", "last_week", "out")[['client', 'Type']].groupby("client",
                                                                                   as_index=False).count().sort_values(
             "Type", ascending=False).query('Type > 5'))[['client', 'Type', 'amoCRM_client', 'Link_amoCRM', 'Name', 'User']].query(
-        'Link_amoCRM != "no link"').head(20)
+        'Link_amoCRM != "no link"')
     save_excel(data_sort_yesterday, data_sort_thisweek, data_sort_lastweek, f"amo_scan {datetime.datetime.today().date()}", ["yesterday", "thisweek", "lastweek"])
 
 
