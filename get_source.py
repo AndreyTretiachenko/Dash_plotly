@@ -154,8 +154,11 @@ def get_source_amocrm(dataframe):
             r_amo_contact_i_json = r_amo_contact_i.json()
             dict_dataframe[i]["Link_amoCRM"] = f"https://meb290.amocrm.ru/contacts/detail/{r_amo_contact_i_json['_embedded']['contacts'][0]['id']}"
             dict_dataframe[i]["Name"] = r_amo_contact_i_json['_embedded']['contacts'][0]['name']
-            dict_dataframe[i]["User"] = rq.get(f"https://meb290.amocrm.ru/api/v4/users/{r_amo_contact_i_json['_embedded']['contacts'][0]['responsible_user_id']}",
+            try:
+                dict_dataframe[i]["User"] = rq.get(f"https://meb290.amocrm.ru/api/v4/users/{r_amo_contact_i_json['_embedded']['contacts'][0]['responsible_user_id']}",
                                  headers={"Authorization": f"Bearer {access_token}"}).json()['name']
+            except:
+                dict_dataframe[i]["User"] = "не определено"
         else:
             dict_dataframe[i]["amoCRM_client"] = "no"
             dict_dataframe[i]["Link_amoCRM"] = "no link"
