@@ -124,7 +124,7 @@ def get_source_amocrm(dataframe):
                                       },
                                       headers={"Content-Type": "application/json"})
         print("access FALSE")
-        print(r_amo_refresh_query)
+        print(r_amo_refresh_query.text)
         r_amo_refresh = r_amo_refresh_query.json()
         data["access_token"] = r_amo_refresh["access_token"]
         data["refresh_token"] = r_amo_refresh["refresh_token"]
@@ -178,6 +178,7 @@ def get_source_1c():
 
 
 def main():
+
     pass
 
 
